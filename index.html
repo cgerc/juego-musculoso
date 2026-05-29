@@ -10,24 +10,24 @@
 
     <div class="contenedor-juego">
         <h1>💪 ¡Juego MÚSCULO! 💪</h1>
-        <p>Pasa los 10 portales resolviendo las sumas para ganar superfuerza.</p>
+        <p>¡Muévete con las flechas ⬅️ ➡️ hacia el portal para entrenar!</p>
         
-        <hr>
-
         <div class="info-progreso">
-            <p>🚪 Portal actual: <span id="numero-portal">1</span> / 10</p>
-            <p>Fuerza actual: <span id="fuerza-emojis"></span></p>
+            <span>🚪 Portal: <span id="numero-portal">1</span> / 10</span> | 
+            <span>Fuerza: <span id="fuerza-emojis"></span></span>
         </div>
 
-        <div class="pantalla-personaje">
-            <div id="personaje" class="personaje-azul flaquito">🟦</div>
-            <p id="estado-texto">¡Está flaquito! ¡Ayúdalo a entrenar!</p>
+        <div class="pista">
+            <div id="personaje" class="personaje-azul">🟦</div>
+            <div id="portal" class="portal-visual">🚪</div>
         </div>
 
-        <div id="zona-desafio" class="zona-desafio">
-            <h2 id="pregunta-suma">¿Cuánto es 1 + 1?</h2>
+        <p id="estado-texto" style="font-weight: bold; color: #555;">¡Camina hacia el portal!</p>
+
+        <div id="zona-desafio" class="zona-desafio oculta">
+            <h2 id="pregunta-suma">¿Cuánto es?</h2>
             <input type="number" id="respuesta-usuario" placeholder="?" min="0">
-            <button onclick="comprobarRespuesta()">¡Cruzar Portal! 🚀</button>
+            <button onclick="comprobarRespuesta()">¡Responder! 🚀</button>
         </div>
 
         <p id="mensaje-feedback" class="mensaje"></p>
@@ -39,69 +39,95 @@
         let num1 = 0;
         let num2 = 0;
         let respuestaCorrecta = 0;
+        
+        // Variables para el movimiento
+        let posicionPersonaje = 20; // Posición inicial en píxeles
+        const personaje = document.getElementById("personaje");
+        const juegoActivo = true;
+        let esperandoRespuesta = false;
 
-        // Función para generar una nueva suma fácil
-        function generarSuma() {
-            if (portalActual <= 10) {
-                // Números pequeños del 1 al 5, ideales para sus 5 años
-                num1 = Math.floor(Math.random() * 5) + 1;
-                num2 = Math.floor(Math.random() * 4) + 1;
-                respuestaCorrecta = num1 + num2;
-                
-                document.getElementById("pregunta-suma").innerText = `¿Cuánto es ${num1} + ${num2}?`;
-                document.getElementById("numero-portal").innerText = portalActual;
-                document.getElementById("respuesta-usuario").value = ""; // Limpia la caja
-            } else {
-                // Fin del juego
-                document.getElementById("zona-desafio").innerHTML = "<h2>🏆 ¡GANASTE! Pasaste los 10 portales 🏆</h2>";
-                document.getElementById("estado-texto").innerText = "¡Tu personaje azul ahora tiene SUPERFUERZA!";
-                document.getElementById("mensaje-feedback").innerText = "¡Felicidades al pequeño programador! 🎮";
+        // Escuchar las teclas del teclado
+        window.addEventListener("keydown", function(evento) {
+            // Si el niño está respondiendo una suma, no se puede mover hasta que termine
+            if (esperandoRespuesta || portalActual > 10) return;
+
+            if (evento.key === "ArrowRight" || evento.key === "d") {
+                if (posicionPersonaje < 340) { // Límite derecho de la pista
+                    posicionPersonaje += 20;
+                    personaje.style.left = posicionPersonaje + "px";
+                }
             }
+            if (evento.key === "ArrowLeft" || evento.key === "a") {
+                if (posicionPersonaje > 10) { // Límite izquierdo
+                    posicionPersonaje -= 20;
+                    personaje.style.left = posicionPersonaje + "px";
+                }
+            }
+
+            // REVISAR SI TOCÓ EL PORTAL (El portal está cerca de los 330px)
+            if (posicionPersonaje >= 320) {
+                esperandoRespuesta = true; // Pausa el movimiento
+                activarDesafioPortal();
+            }
+        });
+
+        function activarDesafioPortal() {
+            document.getElementById("zona-desafio").classList.remove("oculta");
+            document.getElementById("estado-texto").innerText = "🧠 ¡El portal está cerrado! Resuelve la suma para cruzar.";
+            
+            // Generar la suma
+            num1 = Math.floor(Math.random() * 5) + 1;
+            num2 = Math.floor(Math.random() * 4) + 1;
+            respuestaCorrecta = num1 + num2;
+            
+            document.getElementById("pregunta-suma").innerText = `¿Cuánto es ${num1} + ${num2}?`;
+            document.getElementById("respuesta-usuario").value = "";
+            document.getElementById("respuesta-usuario").focus(); // Pone el cursor listo para escribir
         }
 
-        // Función que revisa si el niño acertó
         function comprobarRespuesta() {
             const respuestaInput = document.getElementById("respuesta-usuario").value;
             const mensaje = document.getElementById("mensaje-feedback");
-            const personaje = document.getElementById("personaje");
             const fuerzaEspacio = document.getElementById("fuerza-emojis");
 
-            if (respuestaInput === "") return; // Si no escribió nada, no hace nada
+            if (respuestaInput === "") return;
 
             if (parseInt(respuestaInput) === respuestaCorrecta) {
                 musculo++;
                 portalActual++;
-                mensaje.innerText = " Graham! 🎉 ¡Correcto! El portal se abre.";
+                mensaje.innerText = " Graham! 🎉 ¡Correcto! El portal te deja pasar.";
                 mensaje.style.color = "green";
                 
-                // ¡El personaje crece! Aumentamos el tamaño de la fuente del emoji
-                let nuevoTamano = 30 + (musculo * 10); // Crece 10 píxeles por nivel
+                // El personaje crece
+                let nuevoTamano = 30 + (musculo * 8);
                 personaje.style.fontSize = nuevoTamano + "px";
-                
-                // Agrega emojis de músculos
                 fuerzaEspacio.innerText = "💪".repeat(musculo);
-                
-                // Cambia el texto del estado según su fuerza
-                if(musculo >= 7) {
-                    document.getElementById("estado-texto").innerText = "¡Está SÚPER INMENSAMENTE FUERTE! ⚡";
-                } else if (musculo >= 4) {
-                    document.getElementById("estado-texto").innerText = "¡Ya se le notan los músculos! 🏋️‍♂️";
-                } else {
-                    document.getElementById("estado-texto").innerText = "¡Está empezando a crecer! 💪";
-                }
-
             } else {
-                portalActual++; // Avanza de portal aunque falle para que experimente los 10
-                mensaje.innerText = `❌ ¡Oh no! El portal se cerró. La respuesta era ${respuestaCorrecta}. ¡Suerte en el siguiente!`;
+                portalActual++;
+                mensaje.innerText = `❌ ¡Oh no! El portal se tragó tu energía. Era ${respuestaCorrecta}.`;
                 mensaje.style.color = "red";
             }
 
-            // Esperar un momento y pasar a la siguiente pregunta
-            setTimeout(generarSuma, 2500);
+            // Ocultar zona de preguntas y regresar al personaje al inicio
+            document.getElementById("zona-desafio").classList.add("oculta");
+            
+            setTimeout(() => {
+                mensaje.innerText = "";
+                if (portalActual <= 10) {
+                    document.getElementById("numero-portal").innerText = portalActual;
+                    document.getElementById("estado-texto").innerText = "¡Camina otra vez hacia el siguiente portal! ➡️";
+                    // Regresa al personaje a la izquierda para el siguiente nivel
+                    posicionPersonaje = 20;
+                    personaje.style.left = posicionPersonaje + "px";
+                    esperandoRespuesta = false; // Permite moverlo otra vez
+                } else {
+                    // Fin del juego
+                    document.getElementById("estado-texto").innerText = "🏆 ¡GANASTE EL JUEGO DE MÚSCULO! 🏆";
+                    document.getElementById("mensaje-feedback").innerText = "¡Tu personaje azul es el más fuerte del mundo! 🎉";
+                    personaje.style.left = "170px"; // Lo centra al final
+                }
+            }, 2500);
         }
-
-        // Iniciar la primera pregunta al cargar la página
-        generarSuma();
     </script>
 </body>
 </html>
