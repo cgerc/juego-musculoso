@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego: Músculo 💪</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="contenedor-juego">
+        <h1>💪 ¡Juego MÚSCULO! 💪</h1>
+        <p>Pasa los 10 portales resolviendo las sumas para ganar superfuerza.</p>
+        
+        <hr>
+
+        <div class="info-progreso">
+            <p>🚪 Portal actual: <span id="numero-portal">1</span> / 10</p>
+            <p>Fuerza actual: <span id="fuerza-emojis"></span></p>
+        </div>
+
+        <div class="pantalla-personaje">
+            <div id="personaje" class="personaje-azul flaquito">🟦</div>
+            <p id="estado-texto">¡Está flaquito! ¡Ayúdalo a entrenar!</p>
+        </div>
+
+        <div id="zona-desafio" class="zona-desafio">
+            <h2 id="pregunta-suma">¿Cuánto es 1 + 1?</h2>
+            <input type="number" id="respuesta-usuario" placeholder="?" min="0">
+            <button onclick="comprobarRespuesta()">¡Cruzar Portal! 🚀</button>
+        </div>
+
+        <p id="mensaje-feedback" class="mensaje"></p>
+    </div>
+
+    <script>
+        let portalActual = 1;
+        let musculo = 0;
+        let num1 = 0;
+        let num2 = 0;
+        let respuestaCorrecta = 0;
+
+        // Función para generar una nueva suma fácil
+        function generarSuma() {
+            if (portalActual <= 10) {
+                // Números pequeños del 1 al 5, ideales para sus 5 años
+                num1 = Math.floor(Math.random() * 5) + 1;
+                num2 = Math.floor(Math.random() * 4) + 1;
+                respuestaCorrecta = num1 + num2;
+                
+                document.getElementById("pregunta-suma").innerText = `¿Cuánto es ${num1} + ${num2}?`;
+                document.getElementById("numero-portal").innerText = portalActual;
+                document.getElementById("respuesta-usuario").value = ""; // Limpia la caja
+            } else {
+                // Fin del juego
+                document.getElementById("zona-desafio").innerHTML = "<h2>🏆 ¡GANASTE! Pasaste los 10 portales 🏆</h2>";
+                document.getElementById("estado-texto").innerText = "¡Tu personaje azul ahora tiene SUPERFUERZA!";
+                document.getElementById("mensaje-feedback").innerText = "¡Felicidades al pequeño programador! 🎮";
+            }
+        }
+
+        // Función que revisa si el niño acertó
+        function comprobarRespuesta() {
+            const respuestaInput = document.getElementById("respuesta-usuario").value;
+            const mensaje = document.getElementById("mensaje-feedback");
+            const personaje = document.getElementById("personaje");
+            const fuerzaEspacio = document.getElementById("fuerza-emojis");
+
+            if (respuestaInput === "") return; // Si no escribió nada, no hace nada
+
+            if (parseInt(respuestaInput) === respuestaCorrecta) {
+                musculo++;
+                portalActual++;
+                mensaje.innerText = " Graham! 🎉 ¡Correcto! El portal se abre.";
+                mensaje.style.color = "green";
+                
+                // ¡El personaje crece! Aumentamos el tamaño de la fuente del emoji
+                let nuevoTamano = 30 + (musculo * 10); // Crece 10 píxeles por nivel
+                personaje.style.fontSize = nuevoTamano + "px";
+                
+                // Agrega emojis de músculos
+                fuerzaEspacio.innerText = "💪".repeat(musculo);
+                
+                // Cambia el texto del estado según su fuerza
+                if(musculo >= 7) {
+                    document.getElementById("estado-texto").innerText = "¡Está SÚPER INMENSAMENTE FUERTE! ⚡";
+                } else if (musculo >= 4) {
+                    document.getElementById("estado-texto").innerText = "¡Ya se le notan los músculos! 🏋️‍♂️";
+                } else {
+                    document.getElementById("estado-texto").innerText = "¡Está empezando a crecer! 💪";
+                }
+
+            } else {
+                portalActual++; // Avanza de portal aunque falle para que experimente los 10
+                mensaje.innerText = `❌ ¡Oh no! El portal se cerró. La respuesta era ${respuestaCorrecta}. ¡Suerte en el siguiente!`;
+                mensaje.style.color = "red";
+            }
+
+            // Esperar un momento y pasar a la siguiente pregunta
+            setTimeout(generarSuma, 2500);
+        }
+
+        // Iniciar la primera pregunta al cargar la página
+        generarSuma();
+    </script>
+</body>
+</html>
